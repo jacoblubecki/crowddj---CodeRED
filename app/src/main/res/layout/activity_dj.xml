@@ -60,8 +60,9 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="GO"
+                    android:text="Go"
                     android:layout_margin="4dp"
+                    android:textColor="@color/titleTextColor"
                     android:background="@color/buttonColors"
                     android:onClick="refresh"
                     android:id="@+id/refresh_button"/>
@@ -113,7 +114,9 @@
             android:layout_gravity="center"
             android:onClick="PausePlay"
             android:background="@android:color/transparent"
-            android:layout_marginRight="10dp"/>
+            android:layout_marginRight="10dp"
+
+            />
 
     </LinearLayout>
 
