@@ -1,18 +1,12 @@
 package com.lubecki.crowddj;
 
-import android.content.SharedPreferences;
-import android.support.v7.app.ActionBarActivity;
-import android.os.Bundle;
-import android.util.Log;
+import android.app.Activity;
 import android.content.Intent;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.os.Bundle;
 import android.view.View;
 
 import com.lubecki.crowddj.managers.PlaylistManager;
-import com.lubecki.crowddj.spotify.models.SpotifyTrack;
-import com.lubecki.crowddj.spotify.webapi.SpotifyApi;
-import com.lubecki.crowddj.spotify.webapi.SpotifyService;
+import com.lubecki.crowddj.spotify.SpotifyAuthenticator;
 import com.lubecki.crowddj.twitter.model.SearchList;
 import com.lubecki.crowddj.twitter.model.Tweet;
 import com.lubecki.crowddj.twitter.model.TweetUrls;
@@ -33,9 +27,15 @@ import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import java.util.HashSet;
+
+import retrofit.Callback;
+import retrofit.RetrofitError;
+import retrofit.client.Response;
+
 import timber.log.Timber;
 
-public class djActivity extends ActionBarActivity {
+public class djActivity extends Activity {
 
     private static djActivity instance;
     private PlaylistManager manager;
@@ -77,27 +77,6 @@ public class djActivity extends ActionBarActivity {
         }
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_dj, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
 
     public void refresh(View view) {
         TwitterAPI api = TwitterAPI.getInstance();
