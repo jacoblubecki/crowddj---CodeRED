@@ -29,6 +29,7 @@ import com.lubecki.crowddj.twitter.model.SearchList;
 import com.lubecki.crowddj.twitter.model.TweetUrls;
 import com.lubecki.crowddj.twitter.webapi.TwitterAPI;
 import com.lubecki.crowddj.twitter.webapi.TwitterService;
+import com.spotify.sdk.android.player.Spotify;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -311,5 +312,11 @@ public class djActivity extends ActionBarActivity implements LoginRequester, Tra
                 listView.setAdapter(listAdapter);
             }
         });
+    }
+
+    @Override
+    public void onDestroy() {
+        manager.freePlayer(this);
+        super.onDestroy();
     }
 }

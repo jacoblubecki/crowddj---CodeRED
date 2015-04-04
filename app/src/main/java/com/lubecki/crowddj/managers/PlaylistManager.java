@@ -165,4 +165,8 @@ public class PlaylistManager {
     public void setTrackChangeListener(TrackCallBack callback) {
         this.callback = callback;
     }
+
+    public void freePlayer(Context context) {
+        Spotify.destroyPlayer(context);
+    }
 }
