@@ -34,6 +34,7 @@ public class PlaylistManager {
     private static PlaylistManager manager;
     private Player spotifyPlayer;
     private ArrayList<Track> tracks;
+    private Track lastTrack;
 
     private ConnectionStateCallback connectionStateCallback;
     private PlayerNotificationCallback playerNotificationCallback;
@@ -74,7 +75,6 @@ public class PlaylistManager {
 
     public void addTrack(Track track) {
         tracks.add(track);
-        Timber.v(" " + track.uri + "      ///    URI");
         spotifyPlayer.queue(track.uri);
         callback.trackAdded();
         if(!isPlaying) {
@@ -117,7 +117,6 @@ public class PlaylistManager {
 
             @Override
             public void onLoginFailed(Throwable throwable) {
-                Timber.i(throwable, "Log In Failed");
                 requester.requestLogin();
             }
 
@@ -128,16 +127,17 @@ public class PlaylistManager {
 
             @Override
             public void onConnectionMessage(String s) {
-                Timber.i("Connection Message: " + s);
+                //Timber.i("Connection Message: " + s);
             }
         };
 
         playerNotificationCallback = new PlayerNotificationCallback() {
             @Override
             public void onPlaybackEvent(EventType eventType, PlayerState playerState) {
-                Timber.i("Playback Event" + eventType.name());
 
-                if(eventType == EventType.TRACK_START) {
+
+                if(eventType == EventType.TRACK_START && playerState.positionInMs == 0) {
+                    Timber.v(playerState.positionInMs + " millis" + playerState.playing + " " + playerState.activeDevice);
                     int i = 0;
                     while(i < tracks.size() && !tracks.get(i).uri.equals(playerState.trackUri)) {
                         i++;
@@ -152,6 +152,7 @@ public class PlaylistManager {
             @Override
             public void onPlaybackError(ErrorType errorType, String s) {
                 Timber.i("Playback Error:\n" + errorType.name() + ": " + s);
+                callback.errorCallback();
 
             }
         };

@@ -8,4 +8,5 @@ import com.lubecki.crowddj.spotify.models.Track;
 public interface TrackCallBack {
     public void trackStarted(Track track);
     public void trackAdded();
+    public void errorCallback();
 }

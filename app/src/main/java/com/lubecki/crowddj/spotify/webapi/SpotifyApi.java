@@ -42,7 +42,7 @@ public class SpotifyApi {
     public SpotifyApi() {
         Executor executor = Executors.newSingleThreadExecutor();
         RestAdapter restAdapter = new RestAdapter.Builder()
-                .setLogLevel(RestAdapter.LogLevel.FULL)
+                .setLogLevel(RestAdapter.LogLevel.BASIC)
                 .setClient(new OkClient(new OkHttpClient()))
                 .setExecutors(executor, executor)
                 .setEndpoint(SPOTIFY_WEB_API_ENDPOINT)

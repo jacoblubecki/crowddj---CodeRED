@@ -75,9 +75,6 @@ public class djActivity extends ActionBarActivity implements LoginRequester, Tra
         songData = (TextView) findViewById(R.id.song_title);
         playPauseButton = (ImageButton) findViewById(R.id.play_pause);
 
-
-
-
         if (BuildConfig.DEBUG) {
             Timber.plant(new Timber.DebugTree());
         } else {
@@ -187,6 +184,8 @@ public class djActivity extends ActionBarActivity implements LoginRequester, Tra
 
     public void refresh(View view) {
         refreshList();
+
+        Timber.v("LIST REFRESHED" + manager.getTracks());
     }
 
     private ArrayList<String> getSpotifyUrls(SearchList list) {
@@ -203,10 +202,10 @@ public class djActivity extends ActionBarActivity implements LoginRequester, Tra
                         if(matcher.find()) {
                             Timber.v(matcher.group(1));
                             spotifyTracks.add(matcher.group(1));
-                            oldTweets.add(list.tweets[i].tweetId);
                         }
                     }
                 }
+                oldTweets.add(list.tweets[i].tweetId);
             }
         }
 
@@ -268,6 +267,9 @@ public class djActivity extends ActionBarActivity implements LoginRequester, Tra
 
     @Override
     public void trackStarted(Track track) {
+
+        Timber.v("TRACK STARTED" + track.name);
+
         Picasso.with(this).load(track.album.images.get(0).url).into(imageView);
         songData.setText(track.name + "\n" + track.artists.get(0).name);
 
@@ -278,6 +280,8 @@ public class djActivity extends ActionBarActivity implements LoginRequester, Tra
         updateList();
 
         if(allowRefresh) {
+
+            Timber.v("TRACK REFRESHED" + track.name);
             refreshList();
         }
 
@@ -286,18 +290,26 @@ public class djActivity extends ActionBarActivity implements LoginRequester, Tra
 
     @Override
     public void trackAdded() {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                updateList();
-            }
-        });
+        updateList();
+    }
+
+    @Override
+    public void errorCallback() {
+        Toast.makeText(this, "Spotify Experienced a Fatal Error", Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(this, djActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
     }
 
     private void updateList() {
-        ArrayList<Track> tracks = manager.getTracks();
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ArrayList<Track> tracks = manager.getTracks();
 
-        listAdapter = new ListAdapter(this, R.layout.track_list_item, tracks);
-        listView.setAdapter(listAdapter);
+                listAdapter = new ListAdapter(getBaseContext(), R.layout.track_list_item, tracks);
+                listView.setAdapter(listAdapter);
+            }
+        });
     }
 }
