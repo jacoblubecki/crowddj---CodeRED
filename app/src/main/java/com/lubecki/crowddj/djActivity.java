@@ -1,17 +1,57 @@
 package com.lubecki.crowddj;
 
+import android.content.SharedPreferences;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+
+import com.lubecki.crowddj.managers.PlaylistManager;
+import com.lubecki.crowddj.twitter.model.SearchList;
+import com.lubecki.crowddj.twitter.model.Tweet;
+import com.lubecki.crowddj.twitter.webapi.TwitterAPI;
+import com.lubecki.crowddj.twitter.webapi.TwitterService;
+
+import retrofit.Callback;
+import retrofit.RetrofitError;
+import retrofit.client.Response;
 
 
 public class djActivity extends ActionBarActivity {
+
+    private static djActivity instance;
+    private PlaylistManager manager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dj);
+        instance = this;
+
+        manager = PlaylistManager.getInstance();
+
+        TwitterAPI api = TwitterAPI.getInstance();
+        TwitterService service = api.getService();
+        service.getTweets("#crowddj", new Callback<SearchList>() {
+            @Override
+            public void success(SearchList list, Response response) {
+                for(Tweet tweet : list.tweets) {
+                    Log.v("TEST.JPG", tweet.tweetEntities.hashTags[0].text);
+                }
+            }
+
+            @Override
+            public void failure(RetrofitError error) {
+                Log.e("TEST.PNG", error.getMessage());
+            }
+        });
+
+    }
+
+    public static djActivity getInstance() {
+        return instance;
     }
 
 
@@ -35,5 +75,8 @@ public class djActivity extends ActionBarActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public void refresh(View view) {
     }
 }
