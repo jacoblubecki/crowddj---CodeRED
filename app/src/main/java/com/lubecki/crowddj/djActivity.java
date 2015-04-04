@@ -1,16 +1,22 @@
 package com.lubecki.crowddj;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
+import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.lubecki.crowddj.adapter.ListAdapter;
 import com.lubecki.crowddj.managers.PlaylistManager;
 import com.lubecki.crowddj.spotify.LoginRequester;
 import com.lubecki.crowddj.spotify.SpotifyAuthenticator;
-import com.lubecki.crowddj.spotify.models.SpotifyTrack;
+import com.lubecki.crowddj.spotify.TrackCallBack;
+import com.lubecki.crowddj.spotify.models.Track;
+import com.lubecki.crowddj.spotify.models.TracksPager;
 import com.lubecki.crowddj.spotify.webapi.SpotifyApi;
 import com.lubecki.crowddj.spotify.webapi.SpotifyService;
 import com.lubecki.crowddj.twitter.model.SearchList;
@@ -29,7 +35,7 @@ import java.util.regex.Pattern;
 
 import timber.log.Timber;
 
-public class djActivity extends Activity implements LoginRequester {
+public class djActivity extends ActionBarActivity implements LoginRequester, TrackCallBack {
 
     private static djActivity instance;
     private PlaylistManager manager;
@@ -50,6 +56,8 @@ public class djActivity extends Activity implements LoginRequester {
         instance = this;
         oldTweets = new HashSet<>();
 
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
         listView = (ListView) findViewById(R.id.listView);
 
 
@@ -61,6 +69,7 @@ public class djActivity extends Activity implements LoginRequester {
 
         manager = PlaylistManager.getInstance();
         manager.setLoginRequestListener(this);
+        manager.setTrackChangeListener(this);
 
         if(getSharedPreferences(getString(R.string.shared_prefs_name), MODE_PRIVATE).getString(getString(R.string.spotify_token_key), null) == null) {
             SpotifyAuthenticator.authenticate(this, 1337);
@@ -81,55 +90,62 @@ public class djActivity extends Activity implements LoginRequester {
 
 
     public void refresh(View view) {
-        TwitterAPI api = TwitterAPI.getInstance();
-        TwitterService service = api.getService();
-        service.getTweets("#crowddj", new Callback<SearchList>() {
-            @Override
-            public void success(SearchList searchList, Response response) {
-                SpotifyApi spotifyApi = new SpotifyApi();
-                SpotifyService spotifyService = spotifyApi.getService();
+        EditText editText = (EditText) findViewById(R.id.edit_query);
 
-                for (String trackID : getSpotifyUrls(searchList)) {
-                    spotifyService.getTrack(trackID, new Callback<SpotifyTrack>() {
-                        @Override
-                        public void success(SpotifyTrack spotifyTrack, Response response) {
-                            manager.addTrack(spotifyTrack);
-                            toBeQueued--;
+        if(!editText.getText().toString().trim().equals("")) {
+            TwitterAPI api = TwitterAPI.getInstance();
+            TwitterService service = api.getService();
+            service.getTweets(editText.getText().toString(), new Callback<SearchList>() {
+                @Override
+                public void success(SearchList searchList, Response response) {
+                    SpotifyApi spotifyApi = new SpotifyApi();
+                    SpotifyService spotifyService = spotifyApi.getService();
 
-                            if(toBeQueued == 0) {
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        updateList();
-                                    }
-                                });
+                    for (String trackID : getSpotifyUrls(searchList)) {
+                        spotifyService.getTrack(trackID, new Callback<Track>() {
+                            @Override
+                            public void success(Track track, Response response) {
+                                manager.addTrack(track);
+                                toBeQueued--;
+
+                                if (toBeQueued == 0) {
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            updateList();
+                                        }
+                                    });
+                                }
                             }
-                        }
 
-                        @Override
-                        public void failure(RetrofitError error) {
+                            @Override
+                            public void failure(RetrofitError error) {
 
-                        }
-                    });
+                            }
+                        });
+                    }
                 }
-            }
 
 
-            @Override
-            public void failure(RetrofitError error) {
+                @Override
+                public void failure(RetrofitError error) {
 
-            }
-        });
+                }
+            });
+        }
+        else {
+            Toast.makeText(this, "Please Enter a Hashtag.", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void updateList() {
-        ArrayList<SpotifyTrack> tracks = manager.getTracks();
+        ArrayList<Track> tracks = manager.getTracks();
 
         listAdapter = new ListAdapter(this, R.layout.track_list_item, tracks);
         listView.setAdapter(listAdapter);
     }
 
-    public ArrayList<String> getSpotifyUrls(SearchList list) {
+    private ArrayList<String> getSpotifyUrls(SearchList list) {
         ArrayList<String> spotifyTracks = new ArrayList<>();
 
         for(int i = 0; i < list.tweets.length; i++) {
@@ -147,9 +163,22 @@ public class djActivity extends Activity implements LoginRequester {
                         }
                     }
                 }
-
-                oldTweets.add(list.tweets[i].tweetId);
             }
+            oldTweets.add(list.tweets[i].tweetId);
+        }
+
+        return spotifyTracks;
+    }
+
+    private ArrayList<String> getSpotifyQueries(SearchList list) {
+        ArrayList<String> spotifyTracks = new ArrayList<>();
+
+        for(int i = 0; i < list.tweets.length; i++) {
+            if(!oldTweets.contains(list.tweets[i].tweetId)) {
+                spotifyTracks.add(list.tweets[i].tweetText);
+                toBeQueued++;
+            }
+            oldTweets.add(list.tweets[i].tweetId);
         }
 
         return spotifyTracks;
@@ -166,5 +195,15 @@ public class djActivity extends Activity implements LoginRequester {
     @Override
     public void requestLogin() {
         SpotifyAuthenticator.authenticate(this, 1337);
+    }
+
+    @Override
+    public void trackStarted(Track track) {
+
+    }
+
+    @Override
+    public void trackAdded() {
+
     }
 }

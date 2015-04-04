@@ -2,14 +2,15 @@
 <resources>
 
     <!-- Generic Colors !-->
-    <color name="redTop">#aa1111</color>
-    <color name="redTopShadow">#8c0f0f</color>
-    <color name="titleText">#Fdadad</color>
+    <color name="colorPrimary">#aa1111</color>
+    <color name="colorPrimaryDark">#8c0f0f</color>
+    <color name="colorAccent">#Fdadad</color>
     <color name="darkGray">#303030</color>
     <color name="menuBackground">#c1c1c1</color>
     <color name="menuBoxes">#adadad</color>
     <color name="buttonColors">#8e8e8e</color>
     <color name="highlighted">#9b9b9b</color>
+    <color name="titleTextColor">#dadada</color>
 
     <!-- Specific piece colors !-->
 </resources>

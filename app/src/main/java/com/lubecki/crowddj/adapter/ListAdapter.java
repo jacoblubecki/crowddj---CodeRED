@@ -5,22 +5,20 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.lubecki.crowddj.R;
-import com.lubecki.crowddj.spotify.models.SpotifyTrack;
-import com.squareup.picasso.Picasso;
+import com.lubecki.crowddj.spotify.models.Track;
 
 import java.util.List;
 
-public class ListAdapter extends ArrayAdapter<SpotifyTrack> {
+public class ListAdapter extends ArrayAdapter<Track> {
 
     public ListAdapter(Context context, int textViewResourceId) {
         super(context, textViewResourceId);
     }
 
-    public ListAdapter(Context context, int resource, List<SpotifyTrack> items) {
+    public ListAdapter(Context context, int resource, List<Track> items) {
         super(context, resource, items);
     }
 
@@ -37,7 +35,7 @@ public class ListAdapter extends ArrayAdapter<SpotifyTrack> {
 
         }
 
-        SpotifyTrack track = getItem(position);
+        Track track = getItem(position);
 
         if (track != null) {
 
@@ -55,4 +53,6 @@ public class ListAdapter extends ArrayAdapter<SpotifyTrack> {
 
         return v;
     }
+
+
 }

@@ -9,12 +9,13 @@ import com.lubecki.crowddj.spotify.models.Albums;
 import com.lubecki.crowddj.spotify.models.Artist;
 import com.lubecki.crowddj.spotify.models.Artists;
 import com.lubecki.crowddj.spotify.models.Pager;
-import com.lubecki.crowddj.spotify.models.SpotifyTrack;
+import com.lubecki.crowddj.spotify.models.Track;
 import com.lubecki.crowddj.spotify.models.Tracks;
 import com.lubecki.crowddj.spotify.models.User;
 
 import java.util.Map;
 
+import kaaes.spotify.webapi.android.models.TracksPager;
 import retrofit.Callback;
 import retrofit.http.GET;
 import retrofit.http.Path;
@@ -195,7 +196,7 @@ public interface SpotifyService {
      * @see <a href="https://developer.spotify.com/web-api/get-albums-tracks/">Get an Album’s Tracks</a>
      */
     @GET("/albums/{id}/tracks")
-    public Pager<SpotifyTrack> getAlbumTracks(@Path("id") String albumId);
+    public Pager<Track> getAlbumTracks(@Path("id") String albumId);
 
     /**
      * Get Spotify catalog information about an album’s tracks.
@@ -203,7 +204,7 @@ public interface SpotifyService {
      * @see <a href="https://developer.spotify.com/web-api/get-albums-tracks/">Get an Album’s Tracks</a>
      */
     @GET("/albums/{id}/tracks")
-    public void getAlbumTracks(@Path("id") String albumId, Callback<Pager<SpotifyTrack>> callback);
+    public void getAlbumTracks(@Path("id") String albumId, Callback<Pager<Track>> callback);
 
     /**
      * Get Spotify catalog information about an album’s tracks.
@@ -214,7 +215,7 @@ public interface SpotifyService {
      * @see <a href="https://developer.spotify.com/web-api/get-albums-tracks/">Get an Album’s Tracks</a>
      */
     @GET("/albums/{id}/tracks")
-    public void getAlbumTracks(@Path("id") String albumId, @QueryMap Map<String, Object> options, Callback<Pager<SpotifyTrack>> callback);
+    public void getAlbumTracks(@Path("id") String albumId, @QueryMap Map<String, Object> options, Callback<Pager<Track>> callback);
 
     /**
      * Get Spotify catalog information about an album’s tracks.
@@ -225,7 +226,7 @@ public interface SpotifyService {
      * @see <a href="https://developer.spotify.com/web-api/get-albums-tracks/">Get an Album’s Tracks</a>
      */
     @GET("/albums/{id}/tracks")
-    public Pager<SpotifyTrack> getAlbumTracks(@Path("id") String albumId, @QueryMap Map<String, Object> options);
+    public Pager<Track> getAlbumTracks(@Path("id") String albumId, @QueryMap Map<String, Object> options);
 
 
     /***********
@@ -318,7 +319,7 @@ public interface SpotifyService {
      * @see <a href="https://developer.spotify.com/web-api/get-artists-top-tracks/">Get an Artist’s Top Tracks</a>
      */
     @GET("/artists/{id}/top-tracks")
-    public void getArtistTopTrack(@Path("id") String artistId, @QueryMap Map<String, Object> options, Callback<Pager<SpotifyTrack>> callback);
+    public void getArtistTopTrack(@Path("id") String artistId, @QueryMap Map<String, Object> options, Callback<Pager<Track>> callback);
 
     /**
      * Get Spotify catalog information about an artist’s top tracks by country.
@@ -329,7 +330,7 @@ public interface SpotifyService {
      * @see <a href="https://developer.spotify.com/web-api/get-artists-top-tracks/">Get an Artist’s Top Tracks</a>
      */
     @GET("/artists/{id}/top-tracks")
-    public Pager<SpotifyTrack> getArtistTopTrack(@Path("id") String artistId, @QueryMap Map<String, Object> options);
+    public Pager<Track> getArtistTopTrack(@Path("id") String artistId, @QueryMap Map<String, Object> options);
 
     /**
      * Get Spotify catalog information about an artist’s top tracks by country.
@@ -338,7 +339,7 @@ public interface SpotifyService {
      * @see <a href="https://developer.spotify.com/web-api/get-artists-top-tracks/">Get an Artist’s Top Tracks</a>
      */
     @GET("/artists/{id}/top-tracks")
-    public void getArtistTopTrack(@Path("id") String artistId, Callback<Pager<SpotifyTrack>> callback);
+    public void getArtistTopTrack(@Path("id") String artistId, Callback<Pager<Track>> callback);
 
     /**
      * Get Spotify catalog information about an artist’s top tracks by country.
@@ -347,7 +348,7 @@ public interface SpotifyService {
      * @see <a href="https://developer.spotify.com/web-api/get-artists-top-tracks/">Get an Artist’s Top Tracks</a>
      */
     @GET("/artists/{id}/top-tracks")
-    public Pager<SpotifyTrack> getArtistTopTrack(@Path("id") String artistId);
+    public Pager<Track> getArtistTopTrack(@Path("id") String artistId);
 
     /**
      * Get Spotify catalog information about artists similar to a given artist.
@@ -380,7 +381,7 @@ public interface SpotifyService {
      * @see <a href="https://developer.spotify.com/web-api/get-track/">Get a Track</a>
      */
     @GET("/tracks/{id}")
-    public void getTrack(@Path("id") String trackId, Callback<SpotifyTrack> callback);
+    public void getTrack(@Path("id") String trackId, Callback<Track> callback);
 
     /**
      * Get Spotify catalog information for a single track identified by their unique Spotify ID.
@@ -389,7 +390,7 @@ public interface SpotifyService {
      * @see <a href="https://developer.spotify.com/web-api/get-track/">Get a Track</a>
      */
     @GET("/tracks/{id}")
-    public SpotifyTrack getTrack(@Path("id") String trackId);
+    public Track getTrack(@Path("id") String trackId);
 
     /**
      * Get Spotify catalog information for a single track identified by their unique Spotify ID.
@@ -400,7 +401,7 @@ public interface SpotifyService {
      * @see <a href="https://developer.spotify.com/web-api/get-track/">Get a Track</a>
      */
     @GET("/tracks/{id}")
-    public void getTrack(@Path("id") String trackId, @QueryMap Map<String, Object> options, Callback<SpotifyTrack> callback);
+    public void getTrack(@Path("id") String trackId, @QueryMap Map<String, Object> options, Callback<Track> callback);
 
     /**
      * Get Spotify catalog information for a single track identified by their unique Spotify ID.
@@ -411,7 +412,7 @@ public interface SpotifyService {
      * @see <a href="https://developer.spotify.com/web-api/get-track/">Get a Track</a>
      */
     @GET("/tracks/{id}")
-    public SpotifyTrack getTrack(@Path("id") String trackId, @QueryMap Map<String, Object> options);
+    public Track getTrack(@Path("id") String trackId, @QueryMap Map<String, Object> options);
 
     /**
      * Get Several Tracks
@@ -452,4 +453,19 @@ public interface SpotifyService {
      */
     @GET("/tracks")
     public Tracks getTracks(@Query("ids") String trackIds, @QueryMap Map<String, Object> options);
+
+    /**
+     * Search
+     */
+
+
+    /**
+     * Get Spotify catalog information about tracks that match a keyword string.
+     *
+     * @param q        The search query's keywords (and optional field filters and operators), for example "roadhouse+blues"
+     * @param callback Callback method.
+     * @see <a href="https://developer.spotify.com/web-api/search-item/">Search for an Item</a>
+     */
+    @GET("/search?type=track")
+    public void searchTracks(@Query("q") String q, Callback<com.lubecki.crowddj.spotify.models.TracksPager> callback);
 }

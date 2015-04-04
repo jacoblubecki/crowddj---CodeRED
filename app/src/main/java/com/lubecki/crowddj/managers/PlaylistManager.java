@@ -10,7 +10,8 @@ import com.google.gson.GsonBuilder;
 import com.lubecki.crowddj.R;
 import com.lubecki.crowddj.djActivity;
 import com.lubecki.crowddj.spotify.LoginRequester;
-import com.lubecki.crowddj.spotify.models.SpotifyTrack;
+import com.lubecki.crowddj.spotify.TrackCallBack;
+import com.lubecki.crowddj.spotify.models.Track;
 import com.spotify.sdk.android.player.Config;
 import com.spotify.sdk.android.player.ConnectionStateCallback;
 import com.spotify.sdk.android.player.Player;
@@ -33,11 +34,12 @@ public class PlaylistManager {
 
     private static PlaylistManager manager;
     private Player spotifyPlayer;
-    private ArrayList<SpotifyTrack> tracks;
+    private ArrayList<Track> tracks;
 
     private ConnectionStateCallback connectionStateCallback;
     private PlayerNotificationCallback playerNotificationCallback;
     private LoginRequester requester;
+    private TrackCallBack callback;
 
     private boolean isPlaying = false;
 
@@ -71,9 +73,10 @@ public class PlaylistManager {
         return manager;
     }
 
-    public void addTrack(SpotifyTrack track) {
+    public void addTrack(Track track) {
         tracks.add(track);
         spotifyPlayer.queue(track.uri);
+        callback.trackAdded();
         if(!isPlaying) {
             spotifyPlayer.resume();
             isPlaying = true;
@@ -103,7 +106,7 @@ public class PlaylistManager {
         if(trackString.isEmpty()){
             tracks = new ArrayList<>();
         }else{
-            tracks = new ArrayList<>(Arrays.asList(gson.fromJson(trackString, SpotifyTrack.class)));
+            tracks = new ArrayList<>(Arrays.asList(gson.fromJson(trackString, Track.class)));
         }
     }
 
@@ -121,7 +124,7 @@ public class PlaylistManager {
         return isPlaying;
     }
 
-    public ArrayList<SpotifyTrack> getTracks() {
+    public ArrayList<Track> getTracks() {
         return tracks;
     }
 
@@ -158,6 +161,17 @@ public class PlaylistManager {
             @Override
             public void onPlaybackEvent(EventType eventType, PlayerState playerState) {
                 Timber.i("Playback Event" + eventType.name());
+
+                if(eventType == EventType.TRACK_START) {
+                    int i = 0;
+                    while(!tracks.get(i).uri.equals(playerState.trackUri) && i < tracks.size()) {
+                        i++;
+                    }
+
+                    if(i < tracks.size()) {
+                        callback.trackStarted(tracks.get(i));
+                    }
+                }
             }
 
             @Override
@@ -170,5 +184,9 @@ public class PlaylistManager {
 
     public void setLoginRequestListener(LoginRequester requestListener) {
         requester = requestListener;
+    }
+
+    public void setTrackChangeListener(TrackCallBack callback) {
+        this.callback = callback;
     }
 }
