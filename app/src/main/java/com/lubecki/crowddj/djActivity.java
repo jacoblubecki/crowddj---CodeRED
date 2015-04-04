@@ -4,45 +4,44 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ListView;
 
+import com.lubecki.crowddj.adapter.ListAdapter;
 import com.lubecki.crowddj.managers.PlaylistManager;
+import com.lubecki.crowddj.spotify.LoginRequester;
 import com.lubecki.crowddj.spotify.SpotifyAuthenticator;
+import com.lubecki.crowddj.spotify.models.SpotifyTrack;
+import com.lubecki.crowddj.spotify.webapi.SpotifyApi;
+import com.lubecki.crowddj.spotify.webapi.SpotifyService;
 import com.lubecki.crowddj.twitter.model.SearchList;
-import com.lubecki.crowddj.twitter.model.Tweet;
 import com.lubecki.crowddj.twitter.model.TweetUrls;
 import com.lubecki.crowddj.twitter.webapi.TwitterAPI;
 import com.lubecki.crowddj.twitter.webapi.TwitterService;
 
-import kaaes.spotify.webapi.android.models.Track;
 import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
-
-import com.lubecki.crowddj.spotify.EndTrackCallBack;
-import com.lubecki.crowddj.spotify.SpotifyAuthenticator;
-import com.lubecki.crowddj.spotify.SpotifyPlayer;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import java.util.HashSet;
-
-import retrofit.Callback;
-import retrofit.RetrofitError;
-import retrofit.client.Response;
-
 import timber.log.Timber;
 
-public class djActivity extends Activity {
+public class djActivity extends Activity implements LoginRequester {
 
     private static djActivity instance;
     private PlaylistManager manager;
 
+    private ListAdapter listAdapter;
+    private ListView listView;
+
     private static final int SPOTIFY_REQUEST_CODE = 1337;
 
     private HashSet<String> oldTweets;
+
+    private int toBeQueued = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +49,8 @@ public class djActivity extends Activity {
         setContentView(R.layout.activity_dj);
         instance = this;
         oldTweets = new HashSet<>();
+
+        listView = (ListView) findViewById(R.id.listView);
 
 
         if (BuildConfig.DEBUG) {
@@ -59,6 +60,7 @@ public class djActivity extends Activity {
         }
 
         manager = PlaylistManager.getInstance();
+        manager.setLoginRequestListener(this);
 
         if(getSharedPreferences(getString(R.string.shared_prefs_name), MODE_PRIVATE).getString(getString(R.string.spotify_token_key), null) == null) {
             SpotifyAuthenticator.authenticate(this, 1337);
@@ -84,7 +86,32 @@ public class djActivity extends Activity {
         service.getTweets("#crowddj", new Callback<SearchList>() {
             @Override
             public void success(SearchList searchList, Response response) {
+                SpotifyApi spotifyApi = new SpotifyApi();
+                SpotifyService spotifyService = spotifyApi.getService();
 
+                for (String trackID : getSpotifyUrls(searchList)) {
+                    spotifyService.getTrack(trackID, new Callback<SpotifyTrack>() {
+                        @Override
+                        public void success(SpotifyTrack spotifyTrack, Response response) {
+                            manager.addTrack(spotifyTrack);
+                            toBeQueued--;
+
+                            if(toBeQueued == 0) {
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        updateList();
+                                    }
+                                });
+                            }
+                        }
+
+                        @Override
+                        public void failure(RetrofitError error) {
+
+                        }
+                    });
+                }
             }
 
 
@@ -95,17 +122,49 @@ public class djActivity extends Activity {
         });
     }
 
-    public void getSpotifyUrls(SearchList list) {
-        ArrayList<String> updatedIds = new ArrayList<>();
+    private void updateList() {
+        ArrayList<SpotifyTrack> tracks = manager.getTracks();
+
+        listAdapter = new ListAdapter(this, R.layout.track_list_item, tracks);
+        listView.setAdapter(listAdapter);
+    }
+
+    public ArrayList<String> getSpotifyUrls(SearchList list) {
+        ArrayList<String> spotifyTracks = new ArrayList<>();
 
         for(int i = 0; i < list.tweets.length; i++) {
             if(!oldTweets.contains(list.tweets[i].tweetId)) {
                 TweetUrls[] urls = list.tweets[i].tweetEntities.urlList;
 
                 for(TweetUrls tweetUrls : urls) {
-
+                    if(tweetUrls.expandedUrl.contains("open.spotify.com/track")) {
+                        Pattern pattern = Pattern.compile("/track.*/([^/]+)/?$");
+                        Matcher matcher = pattern.matcher(tweetUrls.expandedUrl);
+                        if(matcher.find()) {
+                            Timber.v(matcher.group(1));
+                            spotifyTracks.add(matcher.group(1));
+                            toBeQueued++;
+                        }
+                    }
                 }
+
+                oldTweets.add(list.tweets[i].tweetId);
             }
         }
+
+        return spotifyTracks;
+    }
+
+    public void PausePlay(View view) {
+        if(manager.isPlaying()) {
+            manager.pause();
+        } else {
+            manager.play();
+        }
+    }
+
+    @Override
+    public void requestLogin() {
+        SpotifyAuthenticator.authenticate(this, 1337);
     }
 }

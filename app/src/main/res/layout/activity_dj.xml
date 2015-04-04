@@ -14,9 +14,6 @@
             android:layout_weight="1"
             android:text="New Button"
             android:id="@+id/button"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="false"
             android:onClick="refresh"/>
         <LinearLayout
             android:orientation="vertical"
