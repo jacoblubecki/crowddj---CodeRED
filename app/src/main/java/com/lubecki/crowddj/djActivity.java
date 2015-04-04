@@ -1,10 +1,10 @@
 package com.lubecki.crowddj;
 
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -17,9 +17,7 @@ import com.lubecki.crowddj.managers.PlaylistManager;
 import com.lubecki.crowddj.spotify.LoginRequester;
 import com.lubecki.crowddj.spotify.SpotifyAuthenticator;
 import com.lubecki.crowddj.spotify.TrackCallBack;
-import com.lubecki.crowddj.spotify.models.Image;
 import com.lubecki.crowddj.spotify.models.Track;
-import com.lubecki.crowddj.spotify.models.TracksPager;
 import com.lubecki.crowddj.spotify.webapi.SpotifyApi;
 import com.lubecki.crowddj.spotify.webapi.SpotifyService;
 import com.lubecki.crowddj.twitter.model.SearchList;
@@ -28,15 +26,14 @@ import com.lubecki.crowddj.twitter.webapi.TwitterAPI;
 import com.lubecki.crowddj.twitter.webapi.TwitterService;
 import com.squareup.picasso.Picasso;
 
-import retrofit.Callback;
-import retrofit.RetrofitError;
-import retrofit.client.Response;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import retrofit.Callback;
+import retrofit.RetrofitError;
+import retrofit.client.Response;
 import timber.log.Timber;
 
 public class djActivity extends ActionBarActivity implements LoginRequester, TrackCallBack {
@@ -65,6 +62,8 @@ public class djActivity extends ActionBarActivity implements LoginRequester, Tra
         listView = (ListView) findViewById(R.id.listView);
 
 
+
+
         if (BuildConfig.DEBUG) {
             Timber.plant(new Timber.DebugTree());
         } else {
@@ -79,6 +78,7 @@ public class djActivity extends ActionBarActivity implements LoginRequester, Tra
             SpotifyAuthenticator.authenticate(this, 1337);
         }
     }
+
 
     public static djActivity getInstance() {
         return instance;
@@ -131,6 +131,7 @@ public class djActivity extends ActionBarActivity implements LoginRequester, Tra
                 }
 
 
+
                 @Override
                 public void failure(RetrofitError error) {
 
@@ -140,6 +141,7 @@ public class djActivity extends ActionBarActivity implements LoginRequester, Tra
         else {
             Toast.makeText(this, "Please Enter a Hashtag.", Toast.LENGTH_SHORT).show();
         }
+
     }
 
     private void updateList() {
@@ -208,6 +210,8 @@ public class djActivity extends ActionBarActivity implements LoginRequester, Tra
 
         TextView songData = (TextView) findViewById(R.id.song_title);
         songData.setText(track.name + "\n" + track.artists.get(0).name);
+        Typeface font = Typeface.createFromAsset(getAssets(),"DIN Condensed Bold.ttf");
+        songData.setTypeface(font);
     }
 
     @Override
