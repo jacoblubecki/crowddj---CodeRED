@@ -22,8 +22,6 @@
         android:background="@color/menuBackground"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
-        android:layout_marginTop="4dp"
-        android:layout_marginBottom="4dp"
         android:layout_below="@id/toolbar"
         android:layout_above="@+id/bottom_bar">
 
@@ -39,7 +37,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:background="@color/menuBoxes"
-                android:layout_marginTop="4dp">
+                android:layout_marginTop="8dp">
 
                 <EditText android:id="@+id/edit_query"
                     android:layout_width="0dp"
@@ -70,7 +68,7 @@
                 android:layout_height="match_parent"
                 android:id="@+id/listView"
                 android:background="@color/menuBoxes"
-                android:layout_marginBottom="4dp"/>
+                android:layout_marginBottom="8dp"/>
         </LinearLayout>
     </LinearLayout>
 
@@ -78,12 +76,13 @@
         android:layout_width="fill_parent"
         android:layout_height="60dp"
         android:layout_alignParentBottom="true"
-        android:background="@color/menuBoxes">
+        android:background="@color/menuBoxes"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp">
 
         <ImageView android:id="@+id/album_art"
             android:layout_width="60dp"
             android:layout_height="wrap_content"
-            android:src="@android:drawable/ic_media_rew"
             android:scaleType="fitXY"
             android:layout_gravity="center"/>
 
@@ -94,14 +93,15 @@
             android:layout_gravity="center"
             android:paddingLeft="8dp"/>
 
-        <ImageButton
+        <ImageButton android:id="@+id/play_pause"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:src="@android:drawable/ic_media_play"
+            android:src="@android:drawable/ic_media_pause"
             android:layout_gravity="center"
             android:onClick="PausePlay"
-            android:background="@android:color/transparent"/>
+            android:background="@android:color/transparent"
+            android:layout_marginRight="10dp"/>
 
     </LinearLayout>
 

@@ -1,12 +1,15 @@
 package com.lubecki.crowddj;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -19,6 +22,7 @@ import com.lubecki.crowddj.spotify.SpotifyAuthenticator;
 import com.lubecki.crowddj.spotify.TrackCallBack;
 import com.lubecki.crowddj.spotify.models.Image;
 import com.lubecki.crowddj.spotify.models.Track;
+import com.lubecki.crowddj.spotify.models.Tracks;
 import com.lubecki.crowddj.spotify.models.TracksPager;
 import com.lubecki.crowddj.spotify.webapi.SpotifyApi;
 import com.lubecki.crowddj.spotify.webapi.SpotifyService;
@@ -46,12 +50,14 @@ public class djActivity extends ActionBarActivity implements LoginRequester, Tra
 
     private ListAdapter listAdapter;
     private ListView listView;
+    private ImageView imageView;
+    private TextView songData;
+    private ImageButton playPauseButton;
 
     private static final int SPOTIFY_REQUEST_CODE = 1337;
 
     private HashSet<String> oldTweets;
 
-    private int toBeQueued = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,6 +69,9 @@ public class djActivity extends ActionBarActivity implements LoginRequester, Tra
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         listView = (ListView) findViewById(R.id.listView);
+        imageView = (ImageView) findViewById(R.id.album_art);
+        songData = (TextView) findViewById(R.id.song_title);
+        playPauseButton = (ImageButton) findViewById(R.id.play_pause);
 
 
         if (BuildConfig.DEBUG) {
@@ -102,23 +111,49 @@ public class djActivity extends ActionBarActivity implements LoginRequester, Tra
             service.getTweets(editText.getText().toString(), new Callback<SearchList>() {
                 @Override
                 public void success(SearchList searchList, Response response) {
+
+                    //trackids search -------------------------
                     SpotifyApi spotifyApi = new SpotifyApi();
                     SpotifyService spotifyService = spotifyApi.getService();
 
-                    for (String trackID : getSpotifyUrls(searchList)) {
-                        spotifyService.getTrack(trackID, new Callback<Track>() {
-                            @Override
-                            public void success(Track track, Response response) {
-                                manager.addTrack(track);
-                                toBeQueued--;
+                    String tracksString = "";
 
-                                if (toBeQueued == 0) {
-                                    runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            updateList();
-                                        }
-                                    });
+                    ArrayList<String> trackIds = getSpotifyUrls(searchList);
+                    for (int i = 0; i < trackIds.size(); i++) {
+                        if(i > 0) {
+                            tracksString += "," + trackIds.get(i);
+                        }
+                        else {
+                            tracksString += trackIds.get(i);
+                        }
+                    }
+
+                    spotifyService.getTracks(tracksString, new Callback<Tracks>() {
+                        @Override
+                        public void success(Tracks tracks, Response response) {
+                            for(Track track : tracks.tracks) {
+                                manager.addTrack(track);
+                            }
+                        }
+
+                        @Override
+                        public void failure(RetrofitError error) {
+
+                        }
+                    });
+
+                    //trackids search ------------------------- END
+
+                    //query search ----------------------------
+
+                    ArrayList<String> queries = getSpotifyQueries(searchList);
+
+                    for(String query : queries) {
+                        spotifyService.searchTracks(query, new Callback<TracksPager>() {
+                            @Override
+                            public void success(TracksPager pager, Response response) {
+                                if(pager.tracks.items.size() > 0) {
+                                    manager.addTrack(pager.tracks.items.get(0));
                                 }
                             }
 
@@ -127,7 +162,9 @@ public class djActivity extends ActionBarActivity implements LoginRequester, Tra
 
                             }
                         });
+
                     }
+
                 }
 
 
@@ -140,13 +177,6 @@ public class djActivity extends ActionBarActivity implements LoginRequester, Tra
         else {
             Toast.makeText(this, "Please Enter a Hashtag.", Toast.LENGTH_SHORT).show();
         }
-    }
-
-    private void updateList() {
-        ArrayList<Track> tracks = manager.getTracks();
-
-        listAdapter = new ListAdapter(this, R.layout.track_list_item, tracks);
-        listView.setAdapter(listAdapter);
     }
 
     private ArrayList<String> getSpotifyUrls(SearchList list) {
@@ -163,55 +193,92 @@ public class djActivity extends ActionBarActivity implements LoginRequester, Tra
                         if(matcher.find()) {
                             Timber.v(matcher.group(1));
                             spotifyTracks.add(matcher.group(1));
-                            toBeQueued++;
+                            oldTweets.add(list.tweets[i].tweetId);
                         }
                     }
                 }
             }
-            oldTweets.add(list.tweets[i].tweetId);
         }
 
         return spotifyTracks;
     }
 
     private ArrayList<String> getSpotifyQueries(SearchList list) {
-        ArrayList<String> spotifyTracks = new ArrayList<>();
+        ArrayList<String> queries = new ArrayList<>();
 
         for(int i = 0; i < list.tweets.length; i++) {
             if(!oldTweets.contains(list.tweets[i].tweetId)) {
-                spotifyTracks.add(list.tweets[i].tweetText);
-                toBeQueued++;
+                String[] split = list.tweets[i].tweetText.split("\\s+");
+                String song = "";
+                String artist = "";
+                boolean foundBy = false;
+
+                for(int j = 0; j < split.length - 1; j++) {
+                    if(!foundBy) {
+                        if(!split[j].equals("by")) {
+                            song+=split[j] + " ";
+                        } else {
+                            foundBy = true;
+                        }
+                    }
+                    else {
+                        if(i < split.length) {
+                            artist += split[j] + " ";
+                        }
+                    }
+                }
+
+                queries.add(song + " " + artist);
+                oldTweets.add(list.tweets[i].tweetId);
             }
-            oldTweets.add(list.tweets[i].tweetId);
         }
 
-        return spotifyTracks;
+        return queries;
     }
 
     public void PausePlay(View view) {
         if(manager.isPlaying()) {
             manager.pause();
+
+            Bitmap play = BitmapFactory.decodeResource(getResources(), android.R.drawable.ic_media_play);
+            playPauseButton.setImageBitmap(play);
+
         } else {
             manager.play();
+
+            Bitmap pause = BitmapFactory.decodeResource(getResources(), android.R.drawable.ic_media_pause);
+            playPauseButton.setImageBitmap(pause);
         }
     }
 
     @Override
     public void requestLogin() {
-        SpotifyAuthenticator.authenticate(this, 1337);
+        SpotifyAuthenticator.authenticate(this, SPOTIFY_REQUEST_CODE);
     }
 
     @Override
     public void trackStarted(Track track) {
-        ImageView imageView = (ImageView) findViewById(R.id.album_art);
         Picasso.with(this).load(track.album.images.get(0).url).into(imageView);
-
-        TextView songData = (TextView) findViewById(R.id.song_title);
         songData.setText(track.name + "\n" + track.artists.get(0).name);
+
+        manager.getTracks().remove(0);
+        updateList();
     }
 
     @Override
     public void trackAdded() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                updateList();
+            }
+        });
+    }
 
+    private void updateList() {
+        ArrayList<Track> tracks = manager.getTracks();
+
+        listAdapter = new ListAdapter(this, R.layout.track_list_item, tracks);
+        listView.setAdapter(listAdapter);
     }
 }

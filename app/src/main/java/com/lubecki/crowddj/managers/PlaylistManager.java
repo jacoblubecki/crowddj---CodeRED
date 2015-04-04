@@ -20,7 +20,6 @@ import com.spotify.sdk.android.player.PlayerState;
 import com.spotify.sdk.android.player.Spotify;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import timber.log.Timber;
 
@@ -75,6 +74,7 @@ public class PlaylistManager {
 
     public void addTrack(Track track) {
         tracks.add(track);
+        Timber.v(" " + track.uri + "      ///    URI");
         spotifyPlayer.queue(track.uri);
         callback.trackAdded();
         if(!isPlaying) {
@@ -83,31 +83,6 @@ public class PlaylistManager {
         }
 
         Log.v("", "PLAYING");
-        serializeList();
-    }
-
-    public void serializeList(){
-        Gson gson = new GsonBuilder()
-                .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
-                .create();
-
-        String json = gson.toJson(tracks);
-
-        preferences.edit().putString("jsonData", json).apply();
-    }
-
-    public void loadList() {
-        Gson gson = new GsonBuilder()
-                .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
-                .create();
-
-        String trackString = preferences.getString("jsonData", "");
-
-        if(trackString.isEmpty()){
-            tracks = new ArrayList<>();
-        }else{
-            tracks = new ArrayList<>(Arrays.asList(gson.fromJson(trackString, Track.class)));
-        }
     }
 
     public void play() {
@@ -164,7 +139,7 @@ public class PlaylistManager {
 
                 if(eventType == EventType.TRACK_START) {
                     int i = 0;
-                    while(!tracks.get(i).uri.equals(playerState.trackUri) && i < tracks.size()) {
+                    while(i < tracks.size() && !tracks.get(i).uri.equals(playerState.trackUri)) {
                         i++;
                     }
 
