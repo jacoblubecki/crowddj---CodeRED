@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/CrowdDJ.iml" filepath="$PROJECT_DIR$/CrowdDJ.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/crowddj---CodeRED.iml" filepath="$PROJECT_DIR$/crowddj---CodeRED.iml" />
     </modules>
   </component>
 </project>
