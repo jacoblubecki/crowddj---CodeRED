@@ -7,7 +7,9 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.lubecki.crowddj.adapter.ListAdapter;
@@ -15,6 +17,7 @@ import com.lubecki.crowddj.managers.PlaylistManager;
 import com.lubecki.crowddj.spotify.LoginRequester;
 import com.lubecki.crowddj.spotify.SpotifyAuthenticator;
 import com.lubecki.crowddj.spotify.TrackCallBack;
+import com.lubecki.crowddj.spotify.models.Image;
 import com.lubecki.crowddj.spotify.models.Track;
 import com.lubecki.crowddj.spotify.models.TracksPager;
 import com.lubecki.crowddj.spotify.webapi.SpotifyApi;
@@ -23,6 +26,7 @@ import com.lubecki.crowddj.twitter.model.SearchList;
 import com.lubecki.crowddj.twitter.model.TweetUrls;
 import com.lubecki.crowddj.twitter.webapi.TwitterAPI;
 import com.lubecki.crowddj.twitter.webapi.TwitterService;
+import com.squareup.picasso.Picasso;
 
 import retrofit.Callback;
 import retrofit.RetrofitError;
@@ -199,7 +203,11 @@ public class djActivity extends ActionBarActivity implements LoginRequester, Tra
 
     @Override
     public void trackStarted(Track track) {
+        ImageView imageView = (ImageView) findViewById(R.id.album_art);
+        Picasso.with(this).load(track.album.images.get(0).url).into(imageView);
 
+        TextView songData = (TextView) findViewById(R.id.song_title);
+        songData.setText(track.name + "\n" + track.artists.get(0).name);
     }
 
     @Override
