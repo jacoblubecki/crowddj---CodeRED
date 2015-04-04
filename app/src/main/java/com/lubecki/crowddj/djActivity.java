@@ -10,11 +10,16 @@ import android.view.MenuItem;
 import android.view.View;
 
 import com.lubecki.crowddj.managers.PlaylistManager;
+import com.lubecki.crowddj.spotify.models.SpotifyTrack;
+import com.lubecki.crowddj.spotify.webapi.SpotifyApi;
+import com.lubecki.crowddj.spotify.webapi.SpotifyService;
 import com.lubecki.crowddj.twitter.model.SearchList;
 import com.lubecki.crowddj.twitter.model.Tweet;
+import com.lubecki.crowddj.twitter.model.TweetUrls;
 import com.lubecki.crowddj.twitter.webapi.TwitterAPI;
 import com.lubecki.crowddj.twitter.webapi.TwitterService;
 
+import kaaes.spotify.webapi.android.models.Track;
 import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
@@ -25,6 +30,8 @@ import com.lubecki.crowddj.spotify.SpotifyPlayer;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import timber.log.Timber;
 
@@ -35,7 +42,7 @@ public class djActivity extends ActionBarActivity {
 
     private static final int SPOTIFY_REQUEST_CODE = 1337;
 
-    private HashSet<Tweet> oldTweets;
+    private HashSet<String> oldTweets;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,15 +105,28 @@ public class djActivity extends ActionBarActivity {
         service.getTweets("#crowddj", new Callback<SearchList>() {
             @Override
             public void success(SearchList searchList, Response response) {
-                for(Tweet tweet : searchList.tweets) {
 
-                }
             }
+
 
             @Override
             public void failure(RetrofitError error) {
 
             }
         });
+    }
+
+    public void getSpotifyUrls(SearchList list) {
+        ArrayList<String> updatedIds = new ArrayList<>();
+
+        for(int i = 0; i < list.tweets.length; i++) {
+            if(!oldTweets.contains(list.tweets[i].tweetId)) {
+                TweetUrls[] urls = list.tweets[i].tweetEntities.urlList;
+
+                for(TweetUrls tweetUrls : urls) {
+
+                }
+            }
+        }
     }
 }

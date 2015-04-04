@@ -23,8 +23,7 @@ public class SpotifyAuthenticator {
         String redirect = context.getResources().getString(R.string.spotify_redirect_uri);
 
         String [] scopes = {
-            "streaming",
-            "search"
+            "streaming"
         };
 
         AuthenticationRequest.Builder builder = new AuthenticationRequest.Builder(clientID, AuthenticationResponse.Type.TOKEN, redirect);
@@ -48,7 +47,7 @@ public class SpotifyAuthenticator {
         }
         else {
             Log.i("message","Error getting spotify token");
-            Timber.i(response.toString()+"This is the response type recieved");
+            Timber.i(response.getType().name() + response.getError()+"This is the response type recieved");
 
         }
     }
