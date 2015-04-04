@@ -23,6 +23,9 @@ import com.lubecki.crowddj.spotify.EndTrackCallBack;
 import com.lubecki.crowddj.spotify.SpotifyAuthenticator;
 import com.lubecki.crowddj.spotify.SpotifyPlayer;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+
 import timber.log.Timber;
 
 public class djActivity extends ActionBarActivity {
@@ -30,46 +33,29 @@ public class djActivity extends ActionBarActivity {
     private static djActivity instance;
     private PlaylistManager manager;
 
-    private SpotifyPlayer spotifyPlayer;
     private static final int SPOTIFY_REQUEST_CODE = 1337;
+
+    private HashSet<Tweet> oldTweets;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        SpotifyAuthenticator.authenticate(this, 1337);
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_dj);
+        instance = this;
+        oldTweets = new HashSet<>();
+
+
         if (BuildConfig.DEBUG) {
             Timber.plant(new Timber.DebugTree());
         } else {
             // TODO eventually put remote logging into a tree and put here.R
         }
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_dj);
-        instance = this;
 
         manager = PlaylistManager.getInstance();
 
-        TwitterAPI api = TwitterAPI.getInstance();
-        TwitterService service = api.getService();
-        service.getTweets("#crowddj", new Callback<SearchList>() {
-            @Override
-            public void success(SearchList list, Response response) {
-                for(Tweet tweet : list.tweets) {
-                    Log.v("TEST.JPG", tweet.tweetEntities.hashTags[0].text);
-                }
-            }
-
-            @Override
-            public void failure(RetrofitError error) {
-                Log.e("TEST.PNG", error.getMessage());
-            }
-        });
-
-        spotifyPlayer = new SpotifyPlayer(this, "2TpxZ7JUBn3uw46aR7qd6V" , new EndTrackCallBack() {
-            @Override
-            public void trackEnded() {
-
-            }
-        });
-
+        if(getSharedPreferences(getString(R.string.shared_prefs_name), MODE_PRIVATE).getString(getString(R.string.spotify_token_key), null) == null) {
+            SpotifyAuthenticator.authenticate(this, 1337);
+        }
     }
 
     public static djActivity getInstance() {
@@ -107,5 +93,20 @@ public class djActivity extends ActionBarActivity {
     }
 
     public void refresh(View view) {
+        TwitterAPI api = TwitterAPI.getInstance();
+        TwitterService service = api.getService();
+        service.getTweets("#crowddj", new Callback<SearchList>() {
+            @Override
+            public void success(SearchList searchList, Response response) {
+                for(Tweet tweet : searchList.tweets) {
+
+                }
+            }
+
+            @Override
+            public void failure(RetrofitError error) {
+
+            }
+        });
     }
 }
