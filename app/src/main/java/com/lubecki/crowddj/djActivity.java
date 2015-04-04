@@ -3,10 +3,10 @@ package com.lubecki.crowddj;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -20,7 +20,6 @@ import com.lubecki.crowddj.managers.PlaylistManager;
 import com.lubecki.crowddj.spotify.LoginRequester;
 import com.lubecki.crowddj.spotify.SpotifyAuthenticator;
 import com.lubecki.crowddj.spotify.TrackCallBack;
-import com.lubecki.crowddj.spotify.models.Image;
 import com.lubecki.crowddj.spotify.models.Track;
 import com.lubecki.crowddj.spotify.models.Tracks;
 import com.lubecki.crowddj.spotify.models.TracksPager;
@@ -32,15 +31,14 @@ import com.lubecki.crowddj.twitter.webapi.TwitterAPI;
 import com.lubecki.crowddj.twitter.webapi.TwitterService;
 import com.squareup.picasso.Picasso;
 
-import retrofit.Callback;
-import retrofit.RetrofitError;
-import retrofit.client.Response;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import retrofit.Callback;
+import retrofit.RetrofitError;
+import retrofit.client.Response;
 import timber.log.Timber;
 
 public class djActivity extends ActionBarActivity implements LoginRequester, TrackCallBack {
@@ -58,6 +56,7 @@ public class djActivity extends ActionBarActivity implements LoginRequester, Tra
 
     private HashSet<String> oldTweets;
 
+    private boolean allowRefresh = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,12 +65,17 @@ public class djActivity extends ActionBarActivity implements LoginRequester, Tra
         instance = this;
         oldTweets = new HashSet<>();
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        TextView toolbar = (TextView) findViewById(R.id.title);
+
+        Typeface font = Typeface.createFromAsset(getAssets(),"DIN Condensed Bold.ttf");
+        toolbar.setTypeface(font);
+
         listView = (ListView) findViewById(R.id.listView);
         imageView = (ImageView) findViewById(R.id.album_art);
         songData = (TextView) findViewById(R.id.song_title);
         playPauseButton = (ImageButton) findViewById(R.id.play_pause);
+
+
 
 
         if (BuildConfig.DEBUG) {
@@ -89,6 +93,7 @@ public class djActivity extends ActionBarActivity implements LoginRequester, Tra
         }
     }
 
+
     public static djActivity getInstance() {
         return instance;
     }
@@ -101,8 +106,7 @@ public class djActivity extends ActionBarActivity implements LoginRequester, Tra
         }
     }
 
-
-    public void refresh(View view) {
+    private void refreshList() {
         EditText editText = (EditText) findViewById(R.id.edit_query);
 
         if(!editText.getText().toString().trim().equals("")) {
@@ -168,6 +172,7 @@ public class djActivity extends ActionBarActivity implements LoginRequester, Tra
                 }
 
 
+
                 @Override
                 public void failure(RetrofitError error) {
 
@@ -177,6 +182,11 @@ public class djActivity extends ActionBarActivity implements LoginRequester, Tra
         else {
             Toast.makeText(this, "Please Enter a Hashtag.", Toast.LENGTH_SHORT).show();
         }
+    }
+
+
+    public void refresh(View view) {
+        refreshList();
     }
 
     private ArrayList<String> getSpotifyUrls(SearchList list) {
@@ -261,8 +271,17 @@ public class djActivity extends ActionBarActivity implements LoginRequester, Tra
         Picasso.with(this).load(track.album.images.get(0).url).into(imageView);
         songData.setText(track.name + "\n" + track.artists.get(0).name);
 
+        Typeface font = Typeface.createFromAsset(getAssets(),"DIN Condensed Bold.ttf");
+        songData.setTypeface(font);
+
         manager.getTracks().remove(0);
         updateList();
+
+        if(allowRefresh) {
+            refreshList();
+        }
+
+        allowRefresh = true;
     }
 
     @Override
