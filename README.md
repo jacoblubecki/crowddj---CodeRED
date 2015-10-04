@@ -1,5 +1,5 @@
 # crowddj---CodeRED
-Crowd source the music!
+Crowd source the music! Created for CodeRED (Spring 2015).
 
 Tweet a song with a specific hashtag to add it to a playlist.
 
